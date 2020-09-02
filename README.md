@@ -1,3 +1,5 @@
+config-demo提供了对于配置迁移规范的参考实现，对于保留在配置文件的配置和迁移到数据库的配置提供统一管理服务。代码层面配置数据来源于数据库查询和原有的configProperties bean。使用该配置管理服务后，需要把原先代码中注入的configProperties改为configCacheService
+
 # config-demo
 1. config-demo代码结构
 配置所需的相关代码已标明，按需添加到项目下即可
