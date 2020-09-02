@@ -15,9 +15,4 @@ public interface LifeCycle {
      * 关闭
      */
     void shutdown();
-
-    /**
-     * 是否存活
-     */
-    boolean isAlive();
 }

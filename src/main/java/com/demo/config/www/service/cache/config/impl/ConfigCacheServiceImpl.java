@@ -78,7 +78,6 @@ public class ConfigCacheServiceImpl extends AbstractCacheService implements Conf
      */
     @Override
     public void startup() {
-        this.isAlive = true;
         // 加载配置
         this.loadConfigs();
         LOGGER.info("Config cache service is started");
@@ -92,7 +91,6 @@ public class ConfigCacheServiceImpl extends AbstractCacheService implements Conf
         // 清除配置
         this.clearAll();
         LOGGER.info("Config cache service shutdown");
-        this.isAlive = false;
     }
 
     /**
@@ -186,22 +184,6 @@ public class ConfigCacheServiceImpl extends AbstractCacheService implements Conf
     @Override
     public List<String> getKeyByPrefix(String prefix) {
         return this.getKeyByPrefixAndSuffix(prefix, "");
-    }
-
-    /**
-     * 根据前缀获取配置
-     * @param prefix
-     * @return
-     */
-    @Override
-    public Map<String, String> getConfigByPrefix(String prefix) {
-        Map<String, String> configs = new HashMap<>();
-        List<String> keyList = this.getKeyByPrefix(prefix);
-        for (int i = 0; i < keyList.size(); i++) {
-            String value = this.configCache.get(keyList.get(i));
-            configs.put(keyList.get(i), value);
-        }
-        return configs;
     }
 
     /**

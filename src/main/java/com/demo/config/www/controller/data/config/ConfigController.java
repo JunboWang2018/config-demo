@@ -76,6 +76,7 @@ public class ConfigController extends BaseDataController {
 	 */
 	@GetMapping(value = "/refreshConfigCache")
 	public APIRespJson refreshConfigCache() {
+		this.configService.refreshConfigCache();
 		return this.response(ResultCode.SUCC, "刷新缓存成功！");
 	}
 

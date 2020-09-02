@@ -50,13 +50,6 @@ public interface ConfigCacheService {
     List<String> getKeyByPrefix(String prefix);
 
     /**
-     * 根据前缀获取配置，为空返回所有
-     * @param prefix
-     * @return
-     */
-    Map<String, String> getConfigByPrefix(String prefix);
-
-    /**
      * 根据后缀获取键
      * @param suffix
      * @return
@@ -70,6 +63,4 @@ public interface ConfigCacheService {
      * @return
      */
     List<String> getKeyByPrefixAndSuffix(String prefix, String suffix);
-
-
 }
