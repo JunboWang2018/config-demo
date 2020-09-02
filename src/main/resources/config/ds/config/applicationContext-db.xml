@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:cache="http://www.springframework.org/schema/cache" 
+	xsi:schemaLocation=" 
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd 
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/cache http://www.springframework.org/schema/cache/spring-cache.xsd"
+	default-autowire="byName">
+	<!--
+		注意上面的default-autowire="byName"，如果没有这个声明不会被注入
+	-->
+
+	<description>Spring-database配置</description>
+	
+	<!-- MyBatis配置 -->
+	<bean id="homeMybatisSqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="homeDataSource" />
+		<property name="configLocation" value="classpath:/config/ds/config/sqlMapConfig.xml" />
+		<!-- 自动扫描entity目录, 省掉Configuration.xml里的手工配置 -->
+		<property name="typeAliasesPackage" value="com.demo.config.www.dao.config" />
+		<!-- 显式指定Mapper文件位置 -->
+		<property name="mapperLocations" value="classpath:/config/mappers/config/**/*.xml" />
+	</bean>
+	
+	<!-- 扫描basePackage下所有以@Repository标识的 接口-->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.demo.config.www.dao.config" />
+		<property name="annotationClass" value="org.springframework.stereotype.Repository"/>
+		<property name="sqlSessionFactoryBeanName" value="homeMybatisSqlSessionFactory" />
+	</bean>
+
+	<!--
+		连接池配置:
+		初始化连接:5 ,最大连接数量:10 , 最小空闲连接:2,最大空闲连接:10 超时等待时间以毫秒为单位:1000ms , 是否在自动回收超时连接的时候打印连接的超时错误：是 
+		是否自动回收超时连接：是   超时时间(以秒数为单位)：180s 
+	-->
+	<bean id="homeDataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+		<property name="driverClassName" value="${db.home.driver}" />
+		<property name="jdbcUrl" value="${db.home.url}" />
+		<property name="username" value="${db.home.user}" />
+		<property name="password" value="${db.home.password}" />
+		<property name="readOnly" value="false" />
+		<property name="connectionTimeout" value="${db.home.connectionTimeout}" />
+		<property name="idleTimeout" value="${db.home.idleTimeout}" />
+		<property name="maxLifetime" value="${db.home.maxLifetime}" />
+		<property name="maximumPoolSize" value="${db.home.maximumPoolSize}" />
+	</bean>
+	
+	<bean id="homeTxManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="homeDataSource" />
+	</bean>
+
+	<!-- 配置事务特性 -->
+	<tx:advice id="txAdvice" transaction-manager="homeTxManager">
+		<tx:attributes>
+			<tx:method name="select*" read-only="true" />
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="query*" read-only="true" />
+			<tx:method name="*" propagation="REQUIRED" rollback-for="Exception"/>
+		</tx:attributes>
+	</tx:advice>
+
+	<!-- 配置哪些类的方法需要进行事务管理 -->
+	<aop:config>
+		<aop:pointcut id="configManagerMethod" expression="execution(* com.demo.config.www.service.config.*..*.*(..))" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="configManagerMethod" />
+	</aop:config>
+	
+</beans>

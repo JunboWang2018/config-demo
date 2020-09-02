@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.config.www.dao.config.ConfigTypeDao">
+
+    <resultMap id="BaseResultMap" type="com.demo.config.www.pojo.config.vo.ConfigTypeVo">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="typeKey" column="type_key" jdbcType="VARCHAR"/>
+        <result property="typeName" column="type_name" jdbcType="VARCHAR"/>
+        <result property="sortIndex" column="sort_index" jdbcType="INTEGER"/>
+        <result property="typeExt" column="type_ext" jdbcType="VARCHAR"/>
+        <result property="isActive" column="is_active" jdbcType="TINYINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    
+    <sql id="Base_Column_List">
+        id, type_key, type_name, sort_index, type_ext, is_active, update_time
+    </sql>
+
+    <!--查询列表-->
+    <select id="queryConfigTypeList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM T_SYS_CONFIG_TYPE
+        WHERE is_active = 1
+        ORDER BY sort_index
+    </select>
+</mapper>

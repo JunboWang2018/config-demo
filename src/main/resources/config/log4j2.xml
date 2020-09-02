@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ 1. 日志级别: off > fatal > error > warn > info > debug > trace > all
+ 2. monitorInterval: 间隔秒数，自动检测和重载已修改的配置文件
+-->
+<Configuration status="info" monitorInterval="60">
+    <Properties>
+        <Property name="project.name">config-demo</Property>
+        <Property name="log.dir">/icooper/log/${project.name}</Property>
+        <Property name="pattern">%d{yyyy-MM-dd HH:mm:ss,SSS}[%-5p][%t] %m &lt;%M&gt;&lt;%F:%L&gt; %n</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <ThresholdFilter level="debug" />
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS}[${project.name}][%-5p][%t] %m &lt;%M&gt;&lt;%F:%L&gt; %n</pattern>
+            </PatternLayout>
+        </Console>
+
+        <RollingRandomAccessFile name="rollingFileInfo" fileName="${log.dir}/info.log"
+                                 filePattern="${log.dir}/info-%d{yyyyMMdd}-%i.log.zip">
+            <Filters>
+                <!-- 级别修改: info -> debug -->
+                <ThresholdFilter level="info" />
+            </Filters>
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS}[%-5p][%t] %m %n</pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20" >
+                <Delete basePath="${log.dir}" >
+                    <IfAccumulatedFileCount exceeds="100" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="rollingFileError" fileName="${log.dir}/error.log"
+                                 filePattern="${log.dir}/error-%d{yyyyMMdd}-%i.log.zip">
+            <Filters>
+                <ThresholdFilter level="error" />
+            </Filters>
+            <PatternLayout>
+                <pattern>${pattern}</pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20" >
+                <Delete basePath="${log.dir}" >
+                    <IfAccumulatedFileCount exceeds="100" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+    </Appenders>
+
+    <!--切换输出级别-->
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="rollingFileInfo"/>
+            <AppenderRef ref="rollingFileError"/>
+        </Root>
+    </Loggers>
+</Configuration>

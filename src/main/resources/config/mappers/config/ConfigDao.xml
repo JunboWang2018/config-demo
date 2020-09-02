@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.demo.config.www.dao.config.ConfigDao">
+
+    <resultMap id="BaseResultMap" type="com.demo.config.www.pojo.config.vo.ConfigVo">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="cfgKey" column="cfg_key" jdbcType="VARCHAR"/>
+        <result property="cfgLabel" column="cfg_label" jdbcType="VARCHAR"/>
+        <result property="cfgTypeId" column="cfg_type_id" jdbcType="INTEGER"/>
+        <result property="cfgValue" column="cfg_value" jdbcType="VARCHAR"/>
+        <result property="cfgType" column="value_type" jdbcType="VARCHAR"/>
+        <result property="defaultValue" column="default_value" jdbcType="VARCHAR"/>
+        <result property="cfgOpts" column="cfg_opts" jdbcType="VARCHAR"/>
+        <result property="sortIndex" column="sort_index" jdbcType="INTEGER"/>
+        <result property="isSystem" column="is_system" jdbcType="TINYINT"/>
+        <result property="isFrontUse" column="is_front_use" jdbcType="TINYINT"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="isActive" column="is_active" jdbcType="TINYINT"/>
+        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, cfg_key, cfg_label, cfg_type_id, cfg_value, value_type, default_value, cfg_opts, sort_index, is_system, is_front_use, description, is_active, update_time
+    </sql>
+
+    <!--查询单个-->
+    <select id="queryConfigList" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM T_SYS_CONFIG
+        <where>
+            is_active = 1
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="cfgKey != null and cfgKey != ''">
+                and cfg_key = #{cfgKey}
+            </if>
+            <if test="typeId != null">
+                and cfg_type_id = #{typeId}
+            </if>
+        </where>
+        ORDER BY sort_index
+    </select>
+
+    <update id="updateMultiConfig">
+        <foreach collection="list" item="item" separator=";">
+            UPDATE T_SYS_CONFIG
+            SET cfg_value = #{item.cfgValue}
+            WHERE cfg_key = #{item.cfgKey}
+        </foreach>
+    </update>
+
+    <update id="restoreAllConfig">
+        UPDATE T_SYS_CONFIG
+        SET cfg_value = default_value;
+    </update>
+
+
+
+</mapper>
