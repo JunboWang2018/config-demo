@@ -43,6 +43,19 @@ public interface ConfigCacheService {
     String get(String key);
 
     /**
+     * 获取所有配置
+     * @param isRepOldKey 是否替换为旧的key
+     * @return
+     */
+    Map<String, String> getAllConfigs(boolean isRepOldKey);
+
+    /**
+     * 获取所有配置
+     * @return
+     */
+    Map<String, String> getAllConfigs();
+
+    /**
      * 根据前缀获取键
      * @param prefix
      * @return
@@ -63,4 +76,19 @@ public interface ConfigCacheService {
      * @return
      */
     List<String> getKeyByPrefixAndSuffix(String prefix, String suffix);
+
+    /**
+     * 根据前缀获取配置，为空返回所有
+     * @param prefix
+     * @param isRepOldKey 是否替换为旧Key
+     * @return
+     */
+    Map<String, String> getConfigByPrefix(String prefix, boolean isRepOldKey);
+
+    /**
+     * 根据前缀获取配置，为空返回所有
+     * @param prefix
+     * @return
+     */
+    Map<String, String> getConfigByPrefix(String prefix);
 }

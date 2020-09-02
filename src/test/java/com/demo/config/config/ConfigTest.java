@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Map;
+
 /**
  * @author Wang Junbo
  * @Description
@@ -71,5 +73,21 @@ public class ConfigTest {
         }
         // 必须让主线程等待，否则会直接跑完  控制台看不到其它线程打印的结果
         Thread.sleep(10000L);
+    }
+
+
+    /**
+     * 自动替换为旧key
+     * keyMap.properties配置：home.module.plat.ip=plat.ip
+     * 用新key home.module.plat.ip取配置
+     * 输出结果：key = plat.ip, value = 192.168.107.63
+     * 已自动替换为旧key
+     */
+    @Test
+    public void testGetOldKey() {
+        Map<String, String> configs = configCacheService.getConfigByPrefix("home.module.plat.ip");
+        for (Map.Entry<String, String> entry : configs.entrySet()) {
+            System.out.println("key = " + entry.getKey() + ", value = " + entry.getValue());
+        }
     }
 }

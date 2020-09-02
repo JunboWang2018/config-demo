@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -30,6 +32,17 @@ public class ConfigCacheServiceImpl extends AbstractCacheService implements Conf
      * 配置集中缓存 保证有序
      */
     private Map<String, String> configCache = new LinkedHashMap<>(128);
+
+    /**
+     * 新旧配置key映射，支持自动转换为旧的，减少前端改动
+     */
+    private Map<String, String> configKeyMap = new HashMap<>(16);
+
+    /**
+     * 当旧key存在时，默认替换为旧key
+     */
+    private static final boolean IS_REP_OLD_KEY = true;
+
     /**
      * 缓存名字
      */
@@ -80,6 +93,8 @@ public class ConfigCacheServiceImpl extends AbstractCacheService implements Conf
     public void startup() {
         // 加载配置
         this.loadConfigs();
+        // 加载key映射
+        this.loadKeyMap();
         LOGGER.info("Config cache service is started");
     }
 
@@ -99,6 +114,26 @@ public class ConfigCacheServiceImpl extends AbstractCacheService implements Conf
     private void loadConfigs() {
         this.loadDbConfigs();
         this.loadFileConfigs();
+    }
+
+    /**
+     * 加载配置映射
+     */
+    private void loadKeyMap() {
+        InputStream keyMapStream = this.getClass().getClassLoader().getResourceAsStream("config/keyMap.properties");
+        if (keyMapStream == null) {
+            // 文件不存在，直接返回
+            return;
+        }
+        Properties mapProp = new Properties();
+        try {
+            mapProp.load(keyMapStream);
+            for (Map.Entry<Object, Object> entry : mapProp.entrySet()) {
+                configKeyMap.put(entry.getKey().toString(), entry.getValue().toString());
+            }
+        } catch (IOException e) {
+            LOGGER.error("load new-old key map data failed！", e);
+        }
     }
 
     /**
@@ -177,6 +212,36 @@ public class ConfigCacheServiceImpl extends AbstractCacheService implements Conf
     }
 
     /**
+     * 获取所有配置
+     * @return
+     */
+    @Override
+    public Map<String, String> getAllConfigs(boolean isRepOldKey) {
+        if (!isRepOldKey) {
+            return this.configCache;
+        }
+        Map<String, String> configs = new LinkedHashMap<>();
+        for (Map.Entry<String, String> entry : this.configCache.entrySet()) {
+            if (this.configKeyMap.containsKey(entry.getKey())) {
+                // 存在旧值，做一层转换
+                configs.put(this.configKeyMap.get(entry.getKey()), entry.getValue());
+            } else {
+                configs.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return configs;
+    }
+
+    /**
+     * 获取所有配置, 默认替换
+     * @return
+     */
+    @Override
+    public Map<String, String> getAllConfigs() {
+        return this.getAllConfigs(IS_REP_OLD_KEY);
+    }
+
+    /**
      * 根据前缀获取键
      * @param prefix
      * @return
@@ -216,6 +281,39 @@ public class ConfigCacheServiceImpl extends AbstractCacheService implements Conf
             }
         }
         return keyList;
+    }
+
+    /**
+     * 根据前缀获取配置
+     * @param prefix
+     * @param isRepOldKey 是否替换为旧Key
+     * @return
+     */
+    @Override
+    public Map<String, String> getConfigByPrefix(String prefix, boolean isRepOldKey) {
+        Map<String, String> configs = new HashMap<>();
+        List<String> keyList = this.getKeyByPrefix(prefix);
+        for (int i = 0; i < keyList.size(); i++) {
+            String key = keyList.get(i);
+            String value = this.configCache.get(keyList.get(i));
+            if (isRepOldKey && this.configKeyMap.containsKey(key)) {
+                configs.put(this.configKeyMap.get(key), value);
+            } else {
+                configs.put(key, value);
+            }
+        }
+        return configs;
+    }
+
+
+    /**
+     * 根据前缀获取配置， 默认替换
+     * @param prefix
+     * @return
+     */
+    @Override
+    public Map<String, String> getConfigByPrefix(String prefix) {
+        return this.getConfigByPrefix(prefix, IS_REP_OLD_KEY);
     }
 
     /**
